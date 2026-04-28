@@ -246,11 +246,9 @@ const AdminPage = () => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchUsers(1, filters);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [filters]);
+    fetchUsers(1, filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch comments for a specific user
   const fetchUserComments = async (userId) => {
@@ -582,7 +580,7 @@ const AdminPage = () => {
         </div>
 
         {/* Filters */}
-        <div className="p-2 sm:p-3 border-b border-gray-200 bg-gray-50">
+        <form onSubmit={(e) => { e.preventDefault(); fetchUsers(1, filters); }} className="p-2 sm:p-3 border-b border-gray-200 bg-gray-50">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
             {/* Search */}
             <div className="relative col-span-1">
@@ -796,22 +794,44 @@ const AdminPage = () => {
             />
           </div>
           {/* Action Buttons */}
-          <div className="mt-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <div className="mt-4 flex flex-row justify-end items-center gap-3">
             <button
-              onClick={clearFilters}
-              className="px-3 py-2 sm:py-1.5 text-[#1B2951] hover:text-[#B99D54] hover:bg-gray-100 rounded text-sm transition-colors w-full sm:w-auto"
+              type="button"
+              onClick={() => {
+                const emptyFilters = {
+                  search: "",
+                  gender: "",
+                  currentState: "",
+                  preferredState: "",
+                  currentCity: "",
+                  preferredCity: "",
+                  designation: "",
+                  department: "",
+                  experienceMin: "",
+                  experienceMax: "",
+                  ctcMin: "",
+                  ctcMax: "",
+                  companyName: "",
+                  ageMin: "",
+                  ageMax: "",
+                  uploadDate: "",
+                };
+                setFilters(emptyFilters);
+                fetchUsers(1, emptyFilters);
+              }}
+              className="px-4 py-1.5 text-[#1B2951] bg-white border border-gray-300 hover:bg-gray-50 rounded text-sm font-medium transition-colors shadow-sm"
             >
               Clear Filters
             </button>
             <button
-              onClick={fetchUsers}
-              className="px-3 py-2 sm:py-1.5 bg-[#1B2951] text-white rounded text-sm hover:bg-[#1B2951]/90 transition-colors flex items-center justify-center gap-1 w-full sm:w-auto"
+              type="submit"
+              className="px-4 py-1.5 bg-[#1B2951] text-white rounded text-sm font-medium hover:bg-[#1B2951]/90 transition-colors flex items-center justify-center gap-2 shadow-sm"
             >
-              <RefreshCw className="h-3 w-3" />
-              Refresh Data
+              <Search className="h-4 w-4" />
+              Search
             </button>
           </div>
-        </div>
+        </form>
 
         {/* Table */}
         <div className="overflow-x-auto">
