@@ -513,7 +513,7 @@ if (loading) {
       <div className="bg-white rounded-lg shadow-md border border-gray-200">
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-200 bg-[#1B2951]">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-1">
             <div className="min-w-0 flex-1">
               <h1 className="text-lg font-semibold text-white">
                 Sub-Admin Dashboard
