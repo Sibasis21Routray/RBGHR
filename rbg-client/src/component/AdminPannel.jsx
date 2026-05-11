@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Edit3, Trash2, RefreshCw, Shield, Users, Key, MoveLeftIcon } from "lucide-react";
+import { X, Edit3, Trash2, RefreshCw, Shield, Users, Key, MoveLeftIcon, Building } from "lucide-react";
 import {
   getSubAdmins,
   getSubUsers,
@@ -19,10 +19,18 @@ const AdminPanel = () => {
   const [newPassword, setNewPassword] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ name: '', email: '', password: '', role: 'sub-admin' });
+  const [createForm, setCreateForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "sub-admin",
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const [companies, setCompanies] = useState([]);
+  const [companyName, setCompanyName] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -93,27 +101,94 @@ const AdminPanel = () => {
 
   const handleCloseCreateModal = () => {
     setIsCreateModalOpen(false);
-    setCreateForm({ name: '', email: '', password: '', role: 'sub-admin' });
+    setCreateForm({ name: "", email: "", password: "", role: "sub-admin" });
   };
 
   const handleCreateSubmit = async () => {
     try {
       await createUser(createForm);
       setIsCreateModalOpen(false);
-      setCreateForm({ name: '', email: '', password: '', role: 'sub-admin' });
+      setCreateForm({ name: "", email: "", password: "", role: "sub-admin" });
       fetchData();
-      alert('User created successfully!');
+      alert("User created successfully!");
     } catch (error) {
-      console.error('Error creating user:', error);
-      alert('Error creating user: ' + error.message);
+      console.error("Error creating user:", error);
+      alert("Error creating user: " + error.message);
     }
   };
+
+  //add company
+  const addCompany = async () => {
+    try {
+      if (!companyName.trim()) return;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URI}/admin/companies`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: companyName,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCompanyName("");
+        fetchCompanies();
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  //delete company
+  const deleteCompany = async (id) => {
+    if (window.confirm("Are you sure you want to delete this company?")) {
+    try {
+      await fetch(`${import.meta.env.VITE_BACKEND_URI}/admin/companies/${id}`, {
+        method: "DELETE",
+      });
+
+      fetchCompanies();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  };
+  //fetch companies
+  const fetchCompanies = async () => {
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URI}/admin/companies`
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+      setCompanies(data.data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+useEffect(() => {
+  fetchCompanies();
+}, []);
 
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-[#f8f6f0]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1a2a52]"></div>
-        <span className="mt-4 text-[#1a2a52] font-medium">Loading admin panel...</span>
+        <span className="mt-4 text-[#1a2a52] font-medium">
+          Loading admin panel...
+        </span>
       </div>
     );
   }
@@ -137,19 +212,22 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-[#f8f6f0] p-6">
       <div className="max-w-6xl mx-auto">
-         <button
-              onClick={() => navigate('/admin')}
-              className="px-4 py-2  text-[#2a3a72] rounded-lg  transition-colors flex items-center"
-            >
-              <MoveLeftIcon size={26} className="mr-2" />
-            </button>
+        <button
+          onClick={() => navigate("/admin")}
+          className="px-4 py-2  text-[#2a3a72] rounded-lg  transition-colors flex items-center"
+        >
+          <MoveLeftIcon size={26} className="mr-2" />
+        </button>
         <div className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-[#1a2a52] mb-2">Admin Panel</h1>
-            <p className="text-gray-600">Manage sub-admins and sub-users in your system</p>
+            <h1 className="text-3xl font-bold text-[#1a2a52] mb-2">
+              Admin Panel
+            </h1>
+            <p className="text-gray-600">
+              Manage sub-admins and sub-users in your system
+            </p>
           </div>
           <div className="flex space-x-3">
-          
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="px-4 py-2 bg-[#bfa75a] text-white rounded-lg hover:bg-[#a89548] transition-colors flex items-center"
@@ -167,18 +245,26 @@ const AdminPanel = () => {
               <Shield className="text-[#1a2a52]" size={28} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#1a2a52]">Sub-Admins</h3>
-              <p className="text-2xl font-bold text-[#1a2a52]">{subAdmins.length}</p>
+              <h3 className="text-lg font-semibold text-[#1a2a52]">
+                Sub-Admins
+              </h3>
+              <p className="text-2xl font-bold text-[#1a2a52]">
+                {subAdmins.length}
+              </p>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-md p-6 flex items-center">
             <div className="p-3 bg-[#bfa75a] bg-opacity-20 rounded-full mr-4">
               <Users className="text-[#1a2a52]" size={28} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-[#1a2a52]">Sub-Users</h3>
-              <p className="text-2xl font-bold text-[#1a2a52]">{subUsers.length}</p>
+              <h3 className="text-lg font-semibold text-[#1a2a52]">
+                Sub-Users
+              </h3>
+              <p className="text-2xl font-bold text-[#1a2a52]">
+                {subUsers.length}
+              </p>
             </div>
           </div>
         </div>
@@ -192,19 +278,28 @@ const AdminPanel = () => {
               {subAdmins.length}
             </span>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b">
-                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">Email</th>
-                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">Created At</th>
-                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">Actions</th>
+                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">
+                    Email
+                  </th>
+                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">
+                    Created At
+                  </th>
+                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {subAdmins.map((admin, index) => (
-                  <tr key={admin._id} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                  <tr
+                    key={admin._id}
+                    className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
                     <td className="p-4 border-b">{admin.email}</td>
                     <td className="p-4 border-b">
                       {new Date(admin.createdAt).toLocaleDateString()}
@@ -231,7 +326,7 @@ const AdminPanel = () => {
                 ))}
               </tbody>
             </table>
-            
+
             {subAdmins.length === 0 && (
               <div className="p-8 text-center text-gray-500">
                 <Shield size={48} className="mx-auto mb-4 text-gray-300" />
@@ -250,19 +345,28 @@ const AdminPanel = () => {
               {subUsers.length}
             </span>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b">
-                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">Email</th>
-                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">Created At</th>
-                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">Actions</th>
+                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">
+                    Email
+                  </th>
+                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">
+                    Created At
+                  </th>
+                  <th className="p-4 text-left text-sm font-medium text-[#1a2a52]">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {subUsers.map((user, index) => (
-                  <tr key={user._id} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                  <tr
+                    key={user._id}
+                    className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
                     <td className="p-4 border-b">{user.email}</td>
                     <td className="p-4 border-b">
                       {new Date(user.createdAt).toLocaleDateString()}
@@ -289,7 +393,7 @@ const AdminPanel = () => {
                 ))}
               </tbody>
             </table>
-            
+
             {subUsers.length === 0 && (
               <div className="p-8 text-center text-gray-500">
                 <Users size={48} className="mx-auto mb-4 text-gray-300" />
@@ -298,6 +402,84 @@ const AdminPanel = () => {
             )}
           </div>
         </div>
+
+
+        {/* Company Management Section */}
+      <div className="mt-12 bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="bg-[#bfa75a] p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center">
+              <Building className="text-white mr-3" size={24} />
+            <h2 className="text-xl font-semibold text-white">
+              Manage Companies
+            </h2>
+            </div>
+            <span className="bg-white text-[#1a2a52] px-3 py-1 rounded-full text-sm font-semibold">
+            {companies.length}
+          </span>
+          </div>
+
+          
+        </div>
+
+        <div className="">
+          {/* Add Company */}
+          <div className="flex flex-col md:flex-row gap-4 mb-8  p-5">
+            <input
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              placeholder="Enter company name"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#bfa75a] focus:border-transparent"
+            />
+
+            <button
+              onClick={addCompany}
+              className="px-6 py-3 bg-[#1a2a52] text-white rounded-xl hover:bg-[#2a3a72] transition-all duration-200 font-medium shadow-sm"
+            >
+              Add Company
+            </button>
+          </div>
+
+          {/* Companies List */}
+          <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+            {companies.length > 0 ? (
+              companies.map((company, index) => (
+                <div
+                  key={company._id}
+                  className={`flex items-start border-b-1 justify-between   py-4 transition-all  hover:shadow-sm px-5`}
+                >
+                  <div className="flex items-start gap-3 ">
+                    <div className="">
+                      <p className="font-normal text-[#1a2a52] break-all">
+                        {company.name}
+                      </p>                     
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => deleteCompany(company._id)}
+                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    title="Delete Company"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                <Shield size={48} className="mx-auto mb-4 text-gray-300" />
+
+                <p className="text-lg font-medium">No companies found</p>
+
+                <p className="text-sm mt-1">
+                  Add your first company to get started
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       </div>
 
       {/* Edit Modal */}
@@ -306,16 +488,22 @@ const AdminPanel = () => {
           <div className="bg-white rounded-xl w-full max-w-md">
             <div className="bg-[#bfa75a] text-white p-4 rounded-t-xl flex justify-between items-center">
               <h3 className="text-lg font-semibold">
-                Edit {editingUser.type === "sub-admin" ? "Sub-Admin" : "Sub-User"}
+                Edit{" "}
+                {editingUser.type === "sub-admin" ? "Sub-Admin" : "Sub-User"}
               </h3>
-              <button onClick={handleCloseModal} className="text-white hover:text-gray-200">
+              <button
+                onClick={handleCloseModal}
+                className="text-white hover:text-gray-200"
+              >
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6">
               <div className="mb-5">
-                <label className="block text-sm font-medium text-[#1a2a52] mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-[#1a2a52] mb-2">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   value={newEmail}
@@ -326,7 +514,9 @@ const AdminPanel = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-[#1a2a52] mb-2">New Password</label>
+                <label className="block text-sm font-medium text-[#1a2a52] mb-2">
+                  New Password
+                </label>
                 <div className="relative">
                   <input
                     type="password"
@@ -335,9 +525,14 @@ const AdminPanel = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bfa75a] focus:border-transparent pr-10"
                     placeholder="Enter new password"
                   />
-                  <Key className="absolute right-3 top-2.5 text-gray-400" size={20} />
+                  <Key
+                    className="absolute right-3 top-2.5 text-gray-400"
+                    size={20}
+                  />
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Leave blank to keep current password</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  Leave blank to keep current password
+                </p>
               </div>
 
               <div className="flex justify-end space-x-3">
@@ -365,53 +560,75 @@ const AdminPanel = () => {
           <div className="bg-white rounded-xl w-full max-w-md">
             <div className="bg-[#bfa75a] text-white p-4 rounded-t-xl flex justify-between items-center">
               <h3 className="text-lg font-semibold">Create User</h3>
-              <button onClick={handleCloseCreateModal} className="text-white hover:text-gray-200">
+              <button
+                onClick={handleCloseCreateModal}
+                className="text-white hover:text-gray-200"
+              >
                 <X size={24} />
               </button>
             </div>
 
             <div className="p-6">
               <div className="mb-5">
-                <label className="block text-sm font-medium text-[#1a2a52] mb-2">Name</label>
+                <label className="block text-sm font-medium text-[#1a2a52] mb-2">
+                  Name
+                </label>
                 <input
                   type="text"
                   value={createForm.name}
-                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, name: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bfa75a] focus:border-transparent"
                   placeholder="Enter name"
                 />
               </div>
 
               <div className="mb-5">
-                <label className="block text-sm font-medium text-[#1a2a52] mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-[#1a2a52] mb-2">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   value={createForm.email}
-                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, email: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bfa75a] focus:border-transparent"
                   placeholder="Enter email address"
                 />
               </div>
 
               <div className="mb-5">
-                <label className="block text-sm font-medium text-[#1a2a52] mb-2">Password</label>
+                <label className="block text-sm font-medium text-[#1a2a52] mb-2">
+                  Password
+                </label>
                 <div className="relative">
                   <input
                     type="password"
                     value={createForm.password}
-                    onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, password: e.target.value })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bfa75a] focus:border-transparent pr-10"
                     placeholder="Enter password"
                   />
-                  <Key className="absolute right-3 top-2.5 text-gray-400" size={20} />
+                  <Key
+                    className="absolute right-3 top-2.5 text-gray-400"
+                    size={20}
+                  />
                 </div>
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-[#1a2a52] mb-2">Role</label>
+                <label className="block text-sm font-medium text-[#1a2a52] mb-2">
+                  Role
+                </label>
                 <select
                   value={createForm.role}
-                  onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, role: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#bfa75a] focus:border-transparent"
                 >
                   <option value="sub-admin">Sub-Admin</option>
@@ -437,8 +654,10 @@ const AdminPanel = () => {
           </div>
         </div>
       )}
+
+      
     </div>
   );
-};
+};;
 
 export default AdminPanel;

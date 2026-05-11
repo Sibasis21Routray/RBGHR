@@ -54,71 +54,7 @@ const DEPARTMENT_OPTIONS = [
   "Other",
 ];
 
-// Company options for filter dropdown
-const COMPANY_OPTIONS = [
-  // Life Insurance
-  "Acko Life Insurance Ltd",
-  "Aditya Birla Sun Life Insurance Co. Ltd",
-  "Ageas Federal Life Insurance Company Limited",
-  "Aviva Life Insurance Company India Limited",
-  "Bajaj Allianz Life Insurance Co. Ltd.",
-  "Bandhan Life Insurance (formerly Aegon Life)",
-  "Canara HSBC Life Insurance Company Limited",
-  "Edelweiss Life Insurance Company Limited",
-  "Future Generali India Life Insurance Company limited",
-  "Go Digit Life Insurance Limited",
-  "HDFC Life Insurance Co. Ltd",
-  "ICICI Prudential Life Insurance Co. Ltd",
-  "IndiaFirst Life Insurance Company Limited",
-  "Kotak Mahindra life Insurance Co. Ltd",
-  "Life Insurance Corporation of India",
-  "PNB MetLife India Insurance Company Limited",
-  "Reliance Nippon Life Insurance Company Limited",
-  "Sahara India Life Insurance Company Limited",
-  "SBI Life Insurance Co. Ltd",
-  "Shriram Life Insurance Company Limited",
-  "Star Union Dai-ichi Life Insurance Company Limited",
-  "TATA AIA Life Insurance Co. Ltd",
-  // General Insurance
-  "Acko General Insurance Ltd",
-  "Agriculture Insurance Company of India Limited",
-  "Bajaj Allianz General Insurance",
-  "Cholamandalam MS General Insurance Company Limited",
-  "ECGC Limited",
-  "Go Digit General Insurance Limited",
-  "HDFC ERGO General Insurance Company Limited",
-  "ICICI Lombard General Insurance",
-  "IFFCO TOKIO General Insurance Company Limited",
-  "Kotak Mahindra General Insurance",
-  "Liberty General Insurance Limited",
-  "Magma HDI General Insurance Company Limited",
-  "National Insurance Company Limited",
-  "Navi General Insurance Limited",
-  "New India Assurance",
-  "Raheja QBE General Insurance Co. Ltd.",
-  "Reliance General Insurance",
-  "Royal Sundaram General Insurance",
-  "SBI General Insurance",
-  "Shriram General Insurance",
-  "Tata AIG General Insurance",
-  "The Oriental Insurance Co",
-  "United India Insurance Co",
-  "Universal Sompo General Insurance",
-  "Zuno General Insurance (formerly Edelweiss)",
-  // Health Insurance
-  "Aditya Birla Health Insurance",
-  "Care Health Insurance",
-  "ManipalCigna Health Insurance",
-  "Niva Bupa Health Insurance",
-  "Star Health & Allied Insurance",
-  "Galaxy Health Insurance Company Limited",
-  "Narayana Health Insurance Ltd",
-  // Insurance Broker
-  "Marsh India Insurance Brokers",
-  "Mahindra Insurance Brokers Ltd",
-  "Policybazaar Insurance Brokers Pvt. Ltd",
-  "Howden Insurance Brokers India Pvt. Ltd",
-];
+
 
 const SubAdminPage = () => {
   const { logout } = useAuth();
@@ -139,6 +75,9 @@ const SubAdminPage = () => {
   const [userComments, setUserComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentsUserInfo, setCommentsUserInfo] = useState({});
+
+   const [companies, setCompanies] = useState([]);
+    const [companyName, setCompanyName] = useState("");
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -167,6 +106,7 @@ const SubAdminPage = () => {
 
   useEffect(() => {
     fetchUsers(1, filters);
+    fetchCompanies();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -433,6 +373,24 @@ const SubAdminPage = () => {
     });
   };
 
+    // Fetch companies for filter dropdown
+  const fetchCompanies =async()=>{
+    try{
+      const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_URI}/admin/companies`
+    );
+    const data = await response.json();
+
+    if (data.success) {
+      setCompanies(data.data);
+    }
+
+    }catch{
+      console.error("Company fetch error:", error);
+      toast.error("Failed to load companies: " + error.message);
+    }
+  }
+
   // Pagination calculations
   // totalPages is now state
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -485,13 +443,13 @@ const SubAdminPage = () => {
     }
   };
 
-if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64 bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B2951]"></div>
-      </div>
-    );
-  }
+// if (loading) {
+//     return (
+//       <div className="flex justify-center items-center h-64 bg-gray-50">
+//         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B2951]"></div>
+//       </div>
+//     );
+//   }
 
   if (error) {
     return (
@@ -551,7 +509,13 @@ if (loading) {
           </div>
         </div>
         {/* Filters */}
-        <form onSubmit={(e) => { e.preventDefault(); fetchUsers(1, filters); }} className="p-2 sm:p-3 border-b border-gray-200 bg-gray-50">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            fetchUsers(1, filters);
+          }}
+          className="p-2 sm:p-3 border-b border-gray-200 bg-gray-50"
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
             {/* Search */}
             <div className="relative col-span-1">
@@ -749,9 +713,9 @@ if (loading) {
               }
             >
               <option value="">Company Name</option>
-              {COMPANY_OPTIONS.map((company) => (
-                <option key={company} value={company}>
-                  {company}
+              {companies.map((company) => (
+                <option key={company._id} value={company.name}>
+                  {company.name}
                 </option>
               ))}
             </select>
@@ -935,7 +899,7 @@ if (loading) {
                                   ? `${comment.substring(0, 50)}...`
                                   : comment}
                               </li>
-                            )
+                            ),
                         )}
                       </ul>
                       <button
@@ -960,7 +924,7 @@ if (loading) {
                         onClick={() =>
                           handleDownloadResume(
                             user._id || user.id,
-                            `${user.firstName}_${user.lastName}_resume.pdf`
+                            `${user.firstName}_${user.lastName}_resume.pdf`,
                           )
                         }
                         className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
@@ -990,7 +954,8 @@ if (loading) {
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-700">
                 Showing {startIndex + 1} to{" "}
-                {Math.min(endIndex, totalUsersCount)} of{" "}{totalUsersCount} results
+                {Math.min(endIndex, totalUsersCount)} of {totalUsersCount}{" "}
+                results
                 <span className="ml-2 text-xs text-gray-500">
                   (Page {currentPage} of {totalPages})
                 </span>
@@ -1165,6 +1130,48 @@ if (loading) {
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40  px-4">
+            <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden border border-white/20">
+              <div className="flex flex-col items-center justify-center px-8 py-12">
+                {/* Spinner */}
+                <div className="relative flex items-center justify-center mb-6">
+                  <div className="h-20 w-20 rounded-full border-4 border-[#1B2951]/10"></div>
+
+                  <div className="absolute h-20 w-20 animate-spin rounded-full border-4 border-transparent border-t-[#1B2951] border-r-[#bfa75a]"></div>
+
+                  {/* <div className="absolute h-10 w-10 rounded-full bg-[#f8f6f0] flex items-center justify-center shadow-inner">
+            <div className="h-3 w-3 rounded-full bg-[#1B2951] animate-pulse"></div>
+          </div> */}
+                </div>
+
+                {/* Heading */}
+                <h2 className="text-2xl font-bold text-[#1B2951] text-center">
+                  Please Wait
+                </h2>
+
+                {/* Description */}
+                <p className="text-gray-500 text-center mt-3 leading-relaxed">
+                  We are processing your request. This may take a few moments.
+                </p>
+
+                {/* Animated Dots */}
+                <div className="flex items-center gap-2 mt-6">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#1B2951] animate-bounce"></span>
+                  <span
+                    className="h-2.5 w-2.5 rounded-full bg-[#bfa75a] animate-bounce"
+                    style={{ animationDelay: "0.15s" }}
+                  ></span>
+                  <span
+                    className="h-2.5 w-2.5 rounded-full bg-[#1B2951] animate-bounce"
+                    style={{ animationDelay: "0.3s" }}
+                  ></span>
+                </div>
               </div>
             </div>
           </div>

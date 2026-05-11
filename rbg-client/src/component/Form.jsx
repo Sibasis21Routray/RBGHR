@@ -13,70 +13,70 @@ const debounce = (func, delay) => {
 };
 
 // --- START: New Data for Companies ---
-const INSURANCE_COMPANIES = [
-  // Life Insurance
-  "Acko Life Insurance Ltd",
-  "Aditya Birla Sun Life Insurance Co. Ltd",
-  "Ageas Federal Life Insurance Company Limited",
-  "Aviva Life Insurance Company India Limited",
-  "Bajaj Allianz Life Insurance Co. Ltd.",
-  "Bandhan Life Insurance (formerly Aegon Life)",
-  "Canara HSBC Life Insurance Company Limited",
-  "Edelweiss Life Insurance Company Limited",
-  "Future Generali India Life Insurance Company limited",
-  "Go Digit Life Insurance Limited",
-  "HDFC Life Insurance Co. Ltd",
-  "ICICI Prudential Life Insurance Co. Ltd",
-  "IndiaFirst Life Insurance Company Limited",
-  "Kotak Mahindra life Insurance Co. Ltd",
-  "Life Insurance Corporation of India",
-  "PNB MetLife India Insurance Company Limited",
-  "Reliance Nippon Life Insurance Company Limited",
-  "Sahara India Life Insurance Company Limited",
-  "SBI Life Insurance Co. Ltd",
-  "Shriram Life Insurance Company Limited",
-  "Star Union Dai-ichi Life Insurance Company Limited",
-  "TATA AIA Life Insurance Co. Ltd",
-  // General Insurance
-  "Acko General Insurance Ltd",
-  "Agriculture Insurance Company of India Limited",
-  "Bajaj Allianz General Insurance",
-  "Cholamandalam MS General Insurance Company Limited",
-  "ECGC Limited",
-  "Go Digit General Insurance Limited",
-  "HDFC ERGO General Insurance Company Limited",
-  "ICICI Lombard General Insurance",
-  "IFFCO TOKIO General Insurance Company Limited",
-  "Kotak Mahindra General Insurance",
-  "Liberty General Insurance Limited",
-  "Magma HDI General Insurance Company Limited",
-  "National Insurance Company Limited",
-  "Navi General Insurance Limited",
-  "New India Assurance",
-  "Raheja QBE General Insurance Co. Ltd.",
-  "Reliance General Insurance",
-  "Royal Sundaram General Insurance",
-  "SBI General Insurance",
-  "Shriram General Insurance",
-  "Tata AIG General Insurance",
-  "The Oriental Insurance Co",
-  "United India Insurance Co",
-  "Universal Sompo General Insurance",
-  "Zuno General Insurance (formerly Edelweiss)",
-  // Health Insurance
-  "Aditya Birla Health Insurance",
-  "Care Health Insurance",
-  "ManipalCigna Health Insurance",
-  "Niva Bupa Health Insurance",
-  "Star Health & Allied Insurance",
-  "Galaxy Health Insurance Company Limited",
-  "Narayana Health Insurance Ltd",
-  // Insurance Broker
-  "Marsh India Insurance Brokers",
-  "Mahindra Insurance Brokers Ltd",
-  "Policybazaar Insurance Brokers Pvt. Ltd",
-  "Howden Insurance Brokers India Pvt. Ltd",
-];
+// const INSURANCE_COMPANIES = [
+//   // Life Insurance
+//   "Acko Life Insurance Ltd",
+//   "Aditya Birla Sun Life Insurance Co. Ltd",
+//   "Ageas Federal Life Insurance Company Limited",
+//   "Aviva Life Insurance Company India Limited",
+//   "Bajaj Allianz Life Insurance Co. Ltd.",
+//   "Bandhan Life Insurance (formerly Aegon Life)",
+//   "Canara HSBC Life Insurance Company Limited",
+//   "Edelweiss Life Insurance Company Limited",
+//   "Future Generali India Life Insurance Company limited",
+//   "Go Digit Life Insurance Limited",
+//   "HDFC Life Insurance Co. Ltd",
+//   "ICICI Prudential Life Insurance Co. Ltd",
+//   "IndiaFirst Life Insurance Company Limited",
+//   "Kotak Mahindra life Insurance Co. Ltd",
+//   "Life Insurance Corporation of India",
+//   "PNB MetLife India Insurance Company Limited",
+//   "Reliance Nippon Life Insurance Company Limited",
+//   "Sahara India Life Insurance Company Limited",
+//   "SBI Life Insurance Co. Ltd",
+//   "Shriram Life Insurance Company Limited",
+//   "Star Union Dai-ichi Life Insurance Company Limited",
+//   "TATA AIA Life Insurance Co. Ltd",
+//   // General Insurance
+//   "Acko General Insurance Ltd",
+//   "Agriculture Insurance Company of India Limited",
+//   "Bajaj Allianz General Insurance",
+//   "Cholamandalam MS General Insurance Company Limited",
+//   "ECGC Limited",
+//   "Go Digit General Insurance Limited",
+//   "HDFC ERGO General Insurance Company Limited",
+//   "ICICI Lombard General Insurance",
+//   "IFFCO TOKIO General Insurance Company Limited",
+//   "Kotak Mahindra General Insurance",
+//   "Liberty General Insurance Limited",
+//   "Magma HDI General Insurance Company Limited",
+//   "National Insurance Company Limited",
+//   "Navi General Insurance Limited",
+//   "New India Assurance",
+//   "Raheja QBE General Insurance Co. Ltd.",
+//   "Reliance General Insurance",
+//   "Royal Sundaram General Insurance",
+//   "SBI General Insurance",
+//   "Shriram General Insurance",
+//   "Tata AIG General Insurance",
+//   "The Oriental Insurance Co",
+//   "United India Insurance Co",
+//   "Universal Sompo General Insurance",
+//   "Zuno General Insurance (formerly Edelweiss)",
+//   // Health Insurance
+//   "Aditya Birla Health Insurance",
+//   "Care Health Insurance",
+//   "ManipalCigna Health Insurance",
+//   "Niva Bupa Health Insurance",
+//   "Star Health & Allied Insurance",
+//   "Galaxy Health Insurance Company Limited",
+//   "Narayana Health Insurance Ltd",
+//   // Insurance Broker
+//   "Marsh India Insurance Brokers",
+//   "Mahindra Insurance Brokers Ltd",
+//   "Policybazaar Insurance Brokers Pvt. Ltd",
+//   "Howden Insurance Brokers India Pvt. Ltd",
+// ];
 
 const INDIAN_STATES = [
   "Andhra Pradesh",
@@ -502,19 +502,21 @@ const LOCATION_APIS = {
   },
 
   // Companies - using local data
-  companies: async (query) => {
-    if (!query) return [];
-    try {
-      const filteredCompanies = INSURANCE_COMPANIES.filter((company) =>
-        company.toLowerCase().includes(query.toLowerCase())
-      );
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      return filteredCompanies.slice(0, 10);
-    } catch (err) {
-      console.error("❌ Companies filtering failed:", err);
-      return [];
-    }
-  },
+companies: async (query, companyOptions = []) => {
+  if (!query) return [];
+
+  try {
+    const filteredCompanies = companyOptions.filter((company) =>
+      company.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    return filteredCompanies.map((c) => c.name).slice(0, 10);
+
+  } catch (err) {
+    console.error("❌ Companies filtering failed:", err);
+    return [];
+  }
+},
 };
 
 // Enhanced Debounced Autocomplete with API Integration
@@ -528,6 +530,7 @@ const DebouncedAutoComplete = ({
   stateCode = null,
   disabled = false,
   isSelect = false,
+    companyOptions = [],
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [filteredOptions, setFilteredOptions] = useState([]);
@@ -560,7 +563,7 @@ const DebouncedAutoComplete = ({
     } finally {
       setIsLoading(false);
     }
-  }, [apiType, stateCode]);
+  }, [apiType, stateCode,companyOptions]);
 
   // Reset input when value prop changes
   useEffect(() => {
@@ -602,7 +605,10 @@ const DebouncedAutoComplete = ({
           `🔍 Fetching ${apiType} for "${searchValue}" with stateCode: "${stateCode}"`
         );
         try {
-          const results = await LOCATION_APIS[apiType](searchValue, stateCode);
+          const results =
+  apiType === "companies"
+    ? await LOCATION_APIS.companies(searchValue, companyOptions)
+    : await LOCATION_APIS[apiType](searchValue, stateCode);
           console.log(
             `✅ Fetched ${results.length} ${apiType} results:`,
             results
@@ -622,7 +628,7 @@ const DebouncedAutoComplete = ({
         setIsLoading(false);
       }
     }, 300),
-    [apiType, stateCode]
+    [apiType, stateCode,companyOptions]
   );
 
   useEffect(() => {
@@ -733,6 +739,30 @@ const UserForm = ({ initialData = null, mode = "add", onClose, onSuccess }) => {
   const docxContainerRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [comments, setComments] = useState([""]);
+
+   const [companies, setCompanies] = useState([]);
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URI}/admin/companies`
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCompanies(data.data);
+      }
+
+    } catch (error) {
+      console.error("Company fetch error:", error);
+      toast.error("Failed to load companies: " + error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
 
   // Handle logout
   const handleLogout = () => {
@@ -1791,11 +1821,12 @@ const checkCityValidity = async (city, stateName) => {
                     control={control}
                     render={({ field }) => (
                       <DebouncedAutoComplete
-                        {...field}
-                        placeholder="Start typing an employer name..."
-                        apiType="companies"
-                        className={inputClass}
-                      />
+  {...field}
+  placeholder="Start typing an employer name..."
+  apiType="companies"
+  className={inputClass}
+  companyOptions={companies}
+/>
                     )}
                   />
                 </div>
